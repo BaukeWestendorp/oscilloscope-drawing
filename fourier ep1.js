@@ -2,7 +2,7 @@ let time = 0;
 let wave = [];
 
 let signalY = [];
-let fourierY;
+let fourier;
 
 const waveOffset = 100;
 
@@ -13,7 +13,7 @@ function setup() {
         signalY[i] = i;
     }
 
-    fourierY = discreteFourierTransform(signalY);
+    fourier = discreteFourierTransform(signalY);
 }
 
 function draw() {
@@ -25,13 +25,13 @@ function draw() {
     // Translate the coordinate system.
     translate(100, 200);
 
-    for (let i = 0; i < fourierY.length; i++) {
+    for (let i = 0; i < fourier.length; i++) {
         let prevX = x;
         let prevY = y;
 
-        let freq = fourierY[i].freq;
-        let r = fourierY[i].amp;
-        let phase = fourierY[i].phase;
+        let freq = fourier[i].freq;
+        let r = fourier[i].amp;
+        let phase = fourier[i].phase;
 
         // Calculate the coordinates around the circle.
         x += r * cos(freq * time + phase + HALF_PI);
@@ -70,7 +70,7 @@ function draw() {
     stroke(255, 80);
     line(x, y, waveOffset, y);
 
-    const dt = TWO_PI / fourierY.length;
+    const dt = TWO_PI / fourier.length;
     time -= dt;
 }
 

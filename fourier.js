@@ -1,60 +1,75 @@
-
-let data = {
-    left: [],
-    right: [],
-    length: 0
-}
+let osc = new Oscillator(5);
+let data;
 
 function setup() {
-    createCanvas(400, 400);
+    createCanvas(600, 400);
 
-    // Generate the input signal y coordinates
-    let signalY = [];
-    for (let i = 0; i < 1000; i++) {
-        signalY[i] = i;
-    }
-    console.log("Created Signal!");
+    let sampleRate = 3000;
+    let frequency = 220;
+    let fourierDetail = sampleRate/frequency;
 
-    // Generate the fourier transform data
-    let fourierY = discreteFourierTransform(signalY);
-    console.log("Created Fourier Transform");
-
-    data.length = fourierY.length;
-    for (let i = 0; i < signalY.length; i++) {
-        let value = 0;
-
-        for (let j = 0; j < data.length; j++) {
-            let freq = fourierY[j].freq;
-            let r = fourierY[j].amp;
-            let phase = fourierY[j].phase;
-
-            value += r * sin(freq * i + phase);
-        }
-
-        data.left.push(value);
-    }
-
-    // Normalize the output
-    let lMax = 0;
-    for (let v of data.left) {
-        if (v > lMax) {
-            lMax = v;
+    let signal = [];
+    for (let n = 0; n < sampleRate/fourierDetail; n++) {
+        for (let i = 0; i < fourierDetail; i++) {
+            signal.push(sin(i));
         }
     }
-    for (let i = 0; i < data.left.length; i++) {
-        data.left[i] /= lMax;
-    }
-    console.log("Created Data");
 
-    // Draw it
-    noFill();
-    stroke(255, 0, 0);
-    beginShape();
-    let max = data.left.length;
-    for (let i = 0; i < max; i++) {
-        vertex(i, height / 2 + data.left[i] * 10);
+    data = generateSoundData(signal);
+}
+
+function draw() {
+
+    let oscData = [];
+    for (let i = 0; i < data.length; i++) {
+        oscData.push([i, data.left[i]]);
     }
-    endShape();
+
+    osc.display(oscData);
+
+    console.log(oscData);
+
+    noLoop();
+}
+
+function generateSoundData(signal) {
+    let time = 0;
+
+    let fourier = discreteFourierTransform(signal);
+
+    let data = {
+        left: [],
+        right: [],
+        length: signal.length
+    }
+
+    let currentChannel = []
+
+    for (let n = 0; n < fourier.length; n++) {
+        let y = 0;
+
+        for (let i = 0; i < fourier.length; i++) {
+            let freq = fourier[i].freq;
+            let r = fourier[i].amp;
+            let phase = fourier[i].phase;
+
+            // Calculate the coordinates around the circle.
+            y += r * sin(freq * time + phase + HALF_PI);
+        }
+
+        const dt = TWO_PI / fourier.length;
+        time -= dt;
+
+        currentChannel.push(y);
+    }
+
+    let max = Math.max(...currentChannel);
+    let min = Math.min(...currentChannel);
+    currentChannel = currentChannel.map(v => map(v, min, max, 0, 1));
+
+    data.left = currentChannel;
+
+    return data;
 }
 
 function discreteFourierTransform(x) {
