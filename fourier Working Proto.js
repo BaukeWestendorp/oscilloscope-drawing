@@ -1,20 +1,37 @@
-let soundWave;
-
-const sampleRate = 44100;
-const frequency = 220;
+// let osc = new Oscillator(5);
+let data;
 
 function setup() {
+    // createCanvas(600, 400);
     noCanvas();
 
-    let fourierDetail = (1/frequency) * sampleRate;
+    let sampleRate = 3000;
+    let frequency = 440;
+    let fourierDetail = sampleRate/frequency;
 
     let signal = [];
-    for (let i = 0; i < fourierDetail; i++) {
-        signal.push(sin(i));
+    for (let n = 0; n < sampleRate/fourierDetail; n++) {
+        for (let i = 0; i < fourierDetail; i++) {
+            signal.push((i));
+        }
     }
 
-    soundWave = generateSoundData(signal);
+    data = generateSoundData(signal);
 }
+
+// function draw() {
+
+//     let oscData = [];
+//     for (let i = 0; i < data.length; i++) {
+//         oscData.push([i, data.left[i]]);
+//     }
+
+//     osc.display(oscData);
+
+//     console.log(oscData);
+
+//     noLoop();
+// }
 
 function generateSoundData(signal) {
     let time = 0;
@@ -33,7 +50,6 @@ function generateSoundData(signal) {
         let y = 0;
 
         for (let i = 0; i < fourier.length; i++) {
-            // Get the data from the current sample.
             let freq = fourier[i].freq;
             let r = fourier[i].amp;
             let phase = fourier[i].phase;
@@ -42,17 +58,15 @@ function generateSoundData(signal) {
             y += r * sin(freq * time + phase + HALF_PI);
         }
 
-        // Normalize the output.
-        let max = Math.max(...currentChannel);
-        let min = Math.min(...currentChannel);
-        currentChannel = currentChannel.map(v => map(v, min, max, 0, 1));
-
-        currentChannel.push(y);
-
-        // Increase time.
         const dt = TWO_PI / fourier.length;
         time -= dt;
+
+        currentChannel.push(y);
     }
+
+    let max = Math.max(...currentChannel);
+    let min = Math.min(...currentChannel);
+    currentChannel = currentChannel.map(v => map(v, min, max, 0, 1));
 
     data.left = currentChannel;
 
