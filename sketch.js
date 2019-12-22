@@ -11,7 +11,8 @@ function stop() {
 }
 
 function setup() {
-    createCanvas(500, 400);
+    let canvas = createCanvas(window.innerWidth, window.innerWidth / 5 * 4);
+    canvas.parent('drawable');
 }
 
 function draw() {
